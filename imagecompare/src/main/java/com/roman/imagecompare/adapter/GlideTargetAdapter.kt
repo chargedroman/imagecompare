@@ -1,4 +1,4 @@
-package com.roman.imagecompare
+package com.roman.imagecompare.adapter
 
 import android.graphics.drawable.Drawable
 import com.bumptech.glide.request.target.SimpleTarget
