@@ -3,10 +3,17 @@ package com.roman.imagecompare
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import android.widget.ImageView
+import android.view.ViewTreeObserver
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DecodeFormat
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.target.Target
 
 /**
  *
@@ -24,49 +31,97 @@ class ImageCompareView: View, ImageCompare {
         attrs,
         defStyleAttr
     ) {
-        imageA = ImageView(context)
-        imageB = ImageView(context)
         args = ImageCompareViewArgs(context, attrs)
     }
 
-    private val imageA: ImageView
-    private val imageB: ImageView
     private val args: ImageCompareViewArgs
-
     private val presenter: ImageComparePresenter = ImageComparePresenter(this)
 
+    private val rect = Rect()
+    private val backgroundPaint = Paint().apply {
+        color = context.getColor(android.R.color.darker_gray)
+        style = Paint.Style.FILL
+    }
+    private val separatorPaint = Paint().apply {
+        color = context.getColor(android.R.color.holo_blue_light)
+        style = Paint.Style.FILL
+    }
 
-    fun getImageViewA(): ImageView = imageA
+    private var drawableOld: Drawable? = null
+    private var drawableNew: Drawable? = null
+    private var aspectRatioOld = 0f
+    private var aspectRatioNew = 0f
+    private var viewHeight = 0
 
-    fun getImageViewB(): ImageView = imageB
+    private val drawableOldTarget = GlideTargetAdapter {
+        drawableOld = it
+        onDrawablesUpdated()
+    }
+
+    private val drawableNewTarget = GlideTargetAdapter {
+        drawableNew = it
+        onDrawablesUpdated()
+    }
+
+
+    fun setImages(old: Drawable, new: Drawable) {
+        drawableOld = old
+        drawableNew = new
+        onDrawablesUpdated()
+    }
+
+    fun setImagesAsync(oldUrl: String, newUrl: String) {
+        viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                viewTreeObserver.removeOnGlobalLayoutListener(this)
+                loadImageAsync(oldUrl, drawableOldTarget)
+                loadImageAsync(newUrl, drawableNewTarget)
+            }
+        })
+    }
+
 
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
+        val drawableNew = drawableNew
+        val drawableOld = drawableOld
+
+        rect.left = 0
+        rect.top = 0
+        rect.right = width
+        rect.bottom = height
+        canvas.drawRect(rect, backgroundPaint)
+
+        if (drawableNew == null || drawableOld == null) {
+            return
+        }
+
         val splitWidth = presenter.getSplitWidth(canvas)
 
-        drawA(canvas, splitWidth)
-        drawB(canvas, splitWidth)
-        drawSlider(canvas)
-    }
-
-
-    private fun drawA(canvas: Canvas, splitWidth: Int) {
         canvas.save()
         canvas.clipRect(0, 0, splitWidth, height)
-        imageA.draw(canvas)
+        val adjustedHeightOld = (width * aspectRatioOld).toInt()
+        val shiftOld = (height - adjustedHeightOld).coerceAtLeast(0) / 2
+        drawableOld.bounds.left = 0
+        drawableOld.bounds.right = width
+        drawableOld.bounds.top = shiftOld
+        drawableOld.bounds.bottom = adjustedHeightOld + shiftOld
+        drawableOld.draw(canvas)
         canvas.restore()
-    }
 
-    private fun drawB(canvas: Canvas, splitWidth: Int) {
         canvas.save()
         canvas.clipRect(splitWidth, 0, width, height)
-        imageB.draw(canvas)
+        val adjustedHeightNew = (width * aspectRatioNew).toInt()
+        val shiftNew = (height - adjustedHeightNew).coerceAtLeast(0) / 2
+        drawableNew.bounds.left = 0
+        drawableNew.bounds.right = width
+        drawableNew.bounds.top = shiftNew
+        drawableNew.bounds.bottom = adjustedHeightNew + shiftNew
+        drawableNew.draw(canvas)
         canvas.restore()
-    }
 
-    private fun drawSlider(canvas: Canvas) {
         canvas.save()
         presenter.onDrawSlider(canvas)
         canvas.restore()
@@ -78,26 +133,44 @@ class ImageCompareView: View, ImageCompare {
         return true
     }
 
-    override fun notifyChanged() {
+    override fun onSliderPositionChanged() {
         postInvalidate()
     }
 
 
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-
-        // Measure the ImageViews to match the size of the canvas
-        imageA.measure(MeasureSpec.makeMeasureSpec(measuredWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(measuredHeight, MeasureSpec.EXACTLY))
-        imageB.measure(MeasureSpec.makeMeasureSpec(measuredWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(measuredHeight, MeasureSpec.EXACTLY))
+        val width = MeasureSpec.getSize(widthMeasureSpec)
+        setMeasuredDimension(width, viewHeight)
     }
 
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
 
-        // Layout the ImageViews to match the size of the canvas
-        imageA.layout(0, 0, measuredWidth, measuredHeight)
-        imageB.layout(0, 0, measuredWidth, measuredHeight)
+    private fun loadImageAsync(url: String, target: Target<Drawable>) {
+        Glide
+            .with(this)
+            .load(url)
+            .skipMemoryCache(true)
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .format(DecodeFormat.PREFER_RGB_565)
+            .into(target)
+    }
+
+    private fun calculateAspectRatio(drawable: Drawable?): Float {
+        if (drawable == null)
+            return 0f
+
+        return drawable.intrinsicHeight.toFloat() / drawable.intrinsicWidth
+    }
+
+    private fun onDrawablesUpdated() {
+        aspectRatioOld = calculateAspectRatio(drawableOld)
+        aspectRatioNew = calculateAspectRatio(drawableNew)
+        viewHeight = maxOf(
+            (width * aspectRatioOld).toInt(),
+            (width * aspectRatioNew).toInt()
+        )
+        requestLayout()
+        invalidate()
     }
 
 }

@@ -9,9 +9,8 @@
     <com.roman.imagecompare.ImageCompareView
         android:id="@+id/view_compare"
         android:layout_width="0dp"
-        android:layout_height="200dp"
+        android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

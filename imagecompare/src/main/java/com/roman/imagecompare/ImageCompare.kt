@@ -8,6 +8,6 @@ package com.roman.imagecompare
 
 interface ImageCompare {
 
-    fun notifyChanged()
+    fun onSliderPositionChanged()
 
 }
