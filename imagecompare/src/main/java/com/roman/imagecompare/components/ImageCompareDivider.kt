@@ -1,7 +1,6 @@
 package com.roman.imagecompare.components
 
 import android.graphics.Canvas
-import android.graphics.Paint
 import android.graphics.Rect
 import com.roman.imagecompare.contract.ImageCompareDividerView
 
@@ -15,11 +14,6 @@ class ImageCompareDivider(private val view: ImageCompareDividerView) {
 
     private val dividerRect = Rect()
     private var currentValue = 50f
-
-    private val dividerPaint = Paint().apply {
-        color = view.getContext().getColor(android.R.color.holo_blue_light)
-        style = Paint.Style.FILL
-    }
 
 
     fun notifySliderValueChanged(value: Float) {
@@ -54,7 +48,7 @@ class ImageCompareDivider(private val view: ImageCompareDividerView) {
             .coerceAtLeast(0 + dividerRadius)
             .coerceAtMost(view.getWidth())
 
-        canvas.drawRect(dividerRect, dividerPaint)
+        canvas.drawRect(dividerRect, view.getArgs().dividerPaint)
 
         canvas.restore()
     }

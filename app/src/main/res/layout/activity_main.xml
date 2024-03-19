@@ -10,6 +10,8 @@
         android:id="@+id/view_compare"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        app:backgroundColor="@color/black"
+        app:dividerColor="@color/purple_200"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

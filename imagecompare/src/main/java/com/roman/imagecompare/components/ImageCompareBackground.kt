@@ -1,7 +1,6 @@
 package com.roman.imagecompare.components
 
 import android.graphics.Canvas
-import android.graphics.Paint
 import android.graphics.Rect
 import com.roman.imagecompare.contract.ImageCompareBaseView
 
@@ -14,10 +13,6 @@ import com.roman.imagecompare.contract.ImageCompareBaseView
 class ImageCompareBackground(private val view: ImageCompareBaseView) {
 
     private val rect = Rect()
-    private val backgroundPaint = Paint().apply {
-        color = view.getContext().getColor(android.R.color.darker_gray)
-        style = Paint.Style.FILL
-    }
 
 
     fun onDrawBackground(canvas: Canvas) {
@@ -26,7 +21,7 @@ class ImageCompareBackground(private val view: ImageCompareBaseView) {
         rect.top = 0
         rect.right = view.getWidth()
         rect.bottom = view.getHeight()
-        canvas.drawRect(rect, backgroundPaint)
+        canvas.drawRect(rect, view.getArgs().backgroundPaint)
         canvas.restore()
     }
 
