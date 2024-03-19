@@ -5,13 +5,13 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
-import android.view.MotionEvent
 import android.view.View
+import com.google.android.material.slider.Slider
 import com.roman.imagecompare.components.ImageCompareBackground
+import com.roman.imagecompare.components.ImageCompareDivider
 import com.roman.imagecompare.components.ImageCompareDrawables
-import com.roman.imagecompare.components.ImageCompareSlider
+import com.roman.imagecompare.contract.ImageCompareDividerView
 import com.roman.imagecompare.contract.ImageCompareDrawablesView
-import com.roman.imagecompare.contract.ImageCompareSliderView
 
 /**
  *
@@ -20,7 +20,7 @@ import com.roman.imagecompare.contract.ImageCompareSliderView
  */
 
 @SuppressLint("ClickableViewAccessibility")
-class ImageCompareView: View, ImageCompareSliderView, ImageCompareDrawablesView {
+class ImageCompareView: View, ImageCompareDividerView, ImageCompareDrawablesView {
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -36,8 +36,17 @@ class ImageCompareView: View, ImageCompareSliderView, ImageCompareDrawablesView 
 
     private val background: ImageCompareBackground = ImageCompareBackground(this)
     private val drawables: ImageCompareDrawables = ImageCompareDrawables(this)
-    private val slider: ImageCompareSlider = ImageCompareSlider(this)
+    private val divider: ImageCompareDivider = ImageCompareDivider(this)
 
+
+    fun bindSlider(slider: Slider) {
+        slider.valueFrom = 0f
+        slider.valueTo = 100f
+        slider.value = 50f
+        slider.addOnChangeListener { _, value, _ ->
+            divider.notifySliderValueChanged(value)
+        }
+    }
 
 
     fun setImages(old: Drawable, new: Drawable) {
@@ -53,17 +62,11 @@ class ImageCompareView: View, ImageCompareSliderView, ImageCompareDrawablesView 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        val splitWidth = slider.getSplitWidth()
+        val splitWidth = divider.getSplitWidth()
 
         background.onDrawBackground(canvas)
         drawables.onDrawImages(canvas, splitWidth)
-        slider.onDrawSlider(canvas)
-    }
-
-
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        slider.onTouch(event)
-        return true
+        divider.onDrawDivider(canvas)
     }
 
 
@@ -78,6 +81,10 @@ class ImageCompareView: View, ImageCompareSliderView, ImageCompareDrawablesView 
 
     override fun getArgs(): ImageCompareViewArgs {
         return args
+    }
+
+    override fun getIconRadius(): Int {
+        return width / 32
     }
 
 

@@ -2,6 +2,7 @@ package com.roman.imagecompare
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.slider.Slider
 
 /**
  *
@@ -17,6 +18,8 @@ class MainActivity: AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val view = findViewById<ImageCompareView>(R.id.view_compare)
+        val slider = findViewById<Slider>(R.id.slider)
+        view.bindSlider(slider)
 
         view.setImagesAsync(
             "https://pictures.and-charge.com/static-img/sample/location_full_3.jpg",

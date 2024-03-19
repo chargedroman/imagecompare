@@ -6,7 +6,7 @@ package com.roman.imagecompare.contract
  * Created: 18.03.24
  */
 
-interface ImageCompareSliderView: ImageCompareBaseView {
+interface ImageCompareDividerView: ImageCompareBaseView {
 
     fun onSliderPositionChanged()
 

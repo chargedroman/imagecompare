@@ -16,7 +16,9 @@ interface ImageCompareBaseView {
 
     fun getContext(): Context
     fun getViewTreeObserver(): ViewTreeObserver
+
     fun getHeight(): Int
     fun getWidth(): Int
+    fun getIconRadius(): Int
 
 }
