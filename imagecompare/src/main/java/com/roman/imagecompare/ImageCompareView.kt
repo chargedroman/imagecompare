@@ -6,6 +6,8 @@ import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.android.material.slider.Slider
 import com.roman.imagecompare.components.ImageCompareBackground
 import com.roman.imagecompare.components.ImageCompareDivider
@@ -38,6 +40,10 @@ class ImageCompareView: View, ImageCompareDividerView, ImageCompareDrawablesView
     private val drawables: ImageCompareDrawables = ImageCompareDrawables(this)
     private val divider: ImageCompareDivider = ImageCompareDivider(this)
 
+    private val isLoaded = MutableLiveData<Boolean>(false)
+
+    fun getIsLoaded(): LiveData<Boolean> = isLoaded
+
 
     fun bindSlider(slider: Slider) {
         slider.valueFrom = 0f
@@ -51,7 +57,6 @@ class ImageCompareView: View, ImageCompareDividerView, ImageCompareDrawablesView
 
     fun setImages(old: Drawable, new: Drawable) {
         drawables.setImages(old, new)
-        onDrawablesChanged()
     }
 
     fun setImagesAsync(oldUrl: String, newUrl: String) {
@@ -74,9 +79,10 @@ class ImageCompareView: View, ImageCompareDividerView, ImageCompareDrawablesView
         invalidate()
     }
 
-    override fun onDrawablesChanged() {
+    override fun onDrawablesChanged(isLoaded: Boolean) {
         requestLayout()
         invalidate()
+        this.isLoaded.postValue(isLoaded)
     }
 
     override fun getArgs(): ImageCompareViewArgs {

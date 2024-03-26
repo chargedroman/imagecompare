@@ -25,6 +25,10 @@ class MainActivity: AppCompatActivity() {
             "https://pictures.and-charge.com/static-img/sample/location_full_3.jpg",
             "https://pictures.and-charge.com/static-img/sample/location_full_4.jpg",
         )
+
+        view.getIsLoaded().observe(this) {
+            println("okhttp is loaded? $it")
+        }
     }
 
 

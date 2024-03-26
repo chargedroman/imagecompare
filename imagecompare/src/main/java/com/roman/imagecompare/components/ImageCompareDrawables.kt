@@ -44,6 +44,7 @@ class ImageCompareDrawables(val view: ImageCompareDrawablesView) {
     }
 
     fun setImagesAsync(oldUrl: String, newUrl: String) {
+        onDrawablesChanged()
         view.getViewTreeObserver().addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 view.getViewTreeObserver().removeOnGlobalLayoutListener(this)
@@ -120,7 +121,7 @@ class ImageCompareDrawables(val view: ImageCompareDrawablesView) {
             (view.getWidth() * aspectRatioOld).toInt(),
             (view.getWidth() * aspectRatioNew).toInt()
         )
-        view.onDrawablesChanged()
+        view.onDrawablesChanged(drawableOld != null && drawableNew != null)
     }
 
 

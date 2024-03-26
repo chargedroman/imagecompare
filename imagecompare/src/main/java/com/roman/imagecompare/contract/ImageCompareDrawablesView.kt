@@ -8,6 +8,6 @@ package com.roman.imagecompare.contract
 
 interface ImageCompareDrawablesView: ImageCompareBaseView {
 
-    fun onDrawablesChanged()
+    fun onDrawablesChanged(isLoaded: Boolean)
 
 }
