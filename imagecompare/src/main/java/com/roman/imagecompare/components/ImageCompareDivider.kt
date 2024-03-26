@@ -2,6 +2,7 @@ package com.roman.imagecompare.components
 
 import android.graphics.Canvas
 import android.graphics.Rect
+import android.view.MotionEvent
 import com.roman.imagecompare.contract.ImageCompareDividerView
 
 /**
@@ -12,22 +13,47 @@ import com.roman.imagecompare.contract.ImageCompareDividerView
 
 class ImageCompareDivider(private val view: ImageCompareDividerView) {
 
+    var onPercentChangedListener: ((Float) -> Unit)? = null
+
     private val dividerRect = Rect()
-    private var currentValue = 50f
+
+    private var wasInitialized = false
+    private var currentSplitWidth = 0
+    private var currentSplitPercent = 50f
 
 
     fun notifySliderValueChanged(value: Float) {
-        this.currentValue = value
+        this.currentSplitPercent = value
+        this.currentSplitWidth = calculateSplitWidth(value)
         view.onSliderPositionChanged()
+    }
+
+    fun notifyTouchValueChanged(touchX: Float) {
+        this.currentSplitWidth = touchX.toInt()
+        this.currentSplitPercent = calculateSplitPercent(this.currentSplitWidth)
+        view.onSliderPositionChanged()
+        onPercentChangedListener?.invoke(currentSplitPercent)
+    }
+
+
+    fun onTouchEvent(event: MotionEvent) {
+        val action = event.action and MotionEvent.ACTION_MASK
+        val isActionDown = action == MotionEvent.ACTION_DOWN
+        val isActionMove = action == MotionEvent.ACTION_MOVE
+
+        if (isActionDown || isActionMove) {
+            notifyTouchValueChanged(event.x)
+        }
     }
 
 
     fun getSplitWidth(): Int {
-        val percent = currentValue
-            .coerceAtLeast(0f)
-            .coerceAtMost(100f) / 100
+        if (wasInitialized.not()) {
+            wasInitialized = true
+            notifySliderValueChanged(currentSplitPercent)
+        }
 
-        return (view.getWidth() * percent).toInt()
+        return currentSplitWidth
     }
 
 
@@ -51,6 +77,23 @@ class ImageCompareDivider(private val view: ImageCompareDividerView) {
         canvas.drawRect(dividerRect, view.getArgs().dividerPaint)
 
         canvas.restore()
+    }
+
+
+    private fun calculateSplitWidth(currentSplitPercent: Float): Int {
+        val percent = currentSplitPercent
+            .coerceAtLeast(0f)
+            .coerceAtMost(100f) / 100
+
+        return (view.getWidth() * percent).toInt()
+    }
+
+    private fun calculateSplitPercent(currentWidth: Int): Float {
+        val totalWidth = view.getWidth()
+        val percent = currentWidth / (totalWidth / 100).toFloat()
+        return percent
+            .coerceAtLeast(0f)
+            .coerceAtMost(100f)
     }
 
 

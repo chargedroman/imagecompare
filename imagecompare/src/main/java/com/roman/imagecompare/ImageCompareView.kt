@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -52,6 +53,9 @@ class ImageCompareView: View, ImageCompareDividerView, ImageCompareDrawablesView
         slider.addOnChangeListener { _, value, _ ->
             divider.notifySliderValueChanged(value)
         }
+        divider.onPercentChangedListener = {
+            slider.value = it
+        }
     }
 
 
@@ -98,6 +102,13 @@ class ImageCompareView: View, ImageCompareDividerView, ImageCompareDrawablesView
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val width = MeasureSpec.getSize(widthMeasureSpec)
         setMeasuredDimension(width, drawables.getMaxDrawableHeight())
+    }
+
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (event != null)
+            divider.onTouchEvent(event)
+        return true
     }
 
 
